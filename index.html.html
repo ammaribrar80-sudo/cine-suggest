@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineSuggest - Movie, Anime & Web Series</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a;font-family:'Inter',sans-serif;color:#fff}
+.grain{position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.03;background:radial-gradient(ellipse at center,rgba(40,20,10,.05),transparent)}
+.marquee{position:fixed;top:0;left:0;right:0;height:40px;z-index:100;background:#1a0a0a;border-bottom:2px solid #c9a227;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.marquee-inner{display:flex;gap:20px;position:absolute;white-space:nowrap;animation:marqueeScroll 30s linear infinite}
+.marquee-inner span{color:#c9a227;font-family:'Cinzel',serif;font-size:13px;letter-spacing:3px;text-transform:uppercase}
+@keyframes marqueeScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.bulbs{position:fixed;top:40px;left:60px;right:60px;height:8px;z-index:99;display:flex;gap:15px;overflow:hidden;justify-content:center}
+.bulb{width:10px;height:10px;border-radius:50%;background:#c9a227;box-shadow:0 0 6px #ffd700;animation:bulbBlink 1.4s ease-in-out infinite alternate}
+.bulb:nth-child(odd){animation-delay:.7s}
+.bulb:nth-child(3n){animation-delay:.35s}
+@keyframes bulbBlink{0%{opacity:.3}100%{opacity:1;box-shadow:0 0 10px #ffd700,0 0 20px #ff8c00}}
+.curtain{position:fixed;top:0;z-index:90;width:55px;height:100%}
+.curtain.left{left:0;background:linear-gradient(135deg,#2d0a0a,#4a0e0e 30%,#6b1515 50%,#4a0e0e 70%,#2d0a0a);border-right:3px solid #8b2020;transform:translateX(0);transition:transform 1.8s cubic-bezier(.77,0,.18,1)}
+.curtain.right{right:0;background:linear-gradient(135deg,#2d0a0a,#4a0e0e 30%,#6b1515 50%,#4a0e0e 70%,#2d0a0a);border-left:3px solid #8b2020;transform:translateX(0);transition:transform 1.8s cubic-bezier(.77,0,.18,1)}
+.curtain.open.left{transform:translateX(-100%)}
+.curtain.open.right{transform:translateX(100%)}
+.curtain-top{position:fixed;top:38px;left:50px;right:50px;z-index:92;height:20px;background:linear-gradient(180deg,#6b1515,#3a0a0a);border-radius:0 0 50% 50%}
+.audience{position:fixed;bottom:0;left:65px;right:65px;z-index:50;display:flex;justify-content:center;gap:4px;pointer-events:none}
+.seat{width:30px;height:60px;position:relative}
+.seat::before{content:"";position:absolute;bottom:0;left:2px;right:2px;height:35px;background:radial-gradient(ellipse at center bottom,#1a1a1a 0%,#0a0a0a 70%,transparent);border-radius:50% 50% 0 0}
+.seat::after{content:"";position:absolute;bottom:30px;left:5px;right:5px;height:18px;background:radial-gradient(ellipse at center,rgba(30,30,30,.8),transparent);border-radius:50%}
+.seat .head{position:absolute;bottom:40px;left:6px;width:18px;height:18px;background:radial-gradient(circle at 40% 40%,#2a2a2a,#111);border-radius:50%;animation:headBob 3s ease-in-out infinite}
+@keyframes headBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.projector{position:fixed;top:-80px;left:50%;transform:translateX(-50%);z-index:40;width:120px;height:120px;pointer-events:none}
+.projector-body{width:60px;height:30px;margin:0 auto;background:linear-gradient(180deg,#333,#1a1a1a);border-radius:4px 4px 0 0;border:1px solid #555;position:relative}
+.projector-lens{width:20px;height:14px;background:radial-gradient(circle,#88ccff,#4488aa);border-radius:50%;position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);box-shadow:0 0 10px #4488aa}
+.projector-beam{width:300px;height:500px;margin:-4px auto 0;background:linear-gradient(180deg,rgba(200,230,255,.12) 0%,rgba(200,230,255,.04) 40%,transparent);clip-path:polygon(35% 0,65% 0,85% 100%,15% 100%);animation:beamFlicker 4s ease-in-out infinite}
+@keyframes beamFlicker{0%,100%{opacity:.8}50%{opacity:1}25%,75%{opacity:.6}}
+.screen{position:fixed;top:60px;left:80px;right:80px;bottom:80px;z-index:30;display:flex;align-items:center;justify-content:center;perspective:1200px}
+.screen-frame{width:100%;height:100%;background:#0d0d0d;border:3px solid #2a1515;border-radius:8px;box-shadow:inset 0 0 60px rgba(0,0,0,.8),0 0 40px rgba(139,32,32,.3);position:relative;overflow:hidden}
+.screen-frame::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.008) 2px,rgba(255,255,255,.008) 4px);pointer-events:none;z-index:5}
+.content{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:30px;overflow-y:auto}
+.content::-webkit-scrollbar{width:6px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:#4a1515;border-radius:3px}
+#landing{text-align:center;opacity:0;transform:scale(.9);transition:all 1s ease}
+#landing.show{opacity:1;transform:scale(1)}
+.landing-title{font-family:'Cinzel',serif;font-size:3em;font-weight:900;color:#ffd700;text-shadow:0 0 30px rgba(255,215,0,.3),0 4px 8px rgba(0,0,0,.5);letter-spacing:6px;margin-bottom:10px}
+.landing-sub{font-size:1.1em;color:#bbb;letter-spacing:4px;text-transform:uppercase;margin-bottom:40px}
+.landing-desc{color:#999;max-width:500px;margin:0 auto 40px;line-height:1.8;font-size:14px}
+.enter-btn{background:linear-gradient(135deg,#c9a227,#8b6914);color:#0a0a0a;border:none;padding:16px 50px;font-family:'Cinzel',serif;font-size:1.1em;font-weight:700;letter-spacing:3px;border-radius:4px;cursor:pointer;transition:all .3s;text-transform:uppercase;box-shadow:0 4px 20px rgba(201,162,39,.4)}
+.enter-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(201,162,39,.6)}
+.questions{width:100%;max-width:600px;margin:0 auto;display:none}
+.questions.active{display:block}
+.question-card{opacity:0;transform:translateX(40px);transition:all .6s ease;display:none}
+.question-card.active{opacity:1;transform:translateX(0);display:block}
+.q-number{font-family:'Cinzel',serif;color:#c9a227;font-size:13px;letter-spacing:3px;margin-bottom:8px}
+.q-text{font-family:'Cinzel',serif;font-size:1.5em;color:#fff;margin-bottom:30px;letter-spacing:1px}
+.q-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.q-options.single-col{grid-template-columns:1fr}
+.q-opt{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);padding:16px 20px;border-radius:6px;cursor:pointer;transition:all .3s;text-align:center;font-size:15px;color:#ccc}
+.q-opt:hover{background:rgba(201,162,39,.12);border-color:#c9a227;color:#ffd700;transform:translateY(-2px)}
+.q-opt.selected{background:rgba(201,162,39,.2);border-color:#c9a227;color:#ffd700}
+.q-progress{margin-bottom:20px}
+.q-progress-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.q-progress-fill{height:100%;background:linear-gradient(90deg,#c9a227,#ffd700);border-radius:2px;transition:width .5s ease;width:0%}
+#results{width:100%;display:none;padding:10px 0}
+#results.show{display:block;animation:fadeInUp .8s ease}
+@keyframes fadeInUp{0%{opacity:0;transform:translateY(30px)}100%{opacity:1;transform:translateY(0)}}
+.results-header{text-align:center;margin-bottom:30px}
+.results-title{font-family:'Cinzel',serif;font-size:1.8em;color:#ffd700;letter-spacing:3px}
+.results-sub{color:#888;font-size:13px;margin-top:6px}
+.results-actions{display:flex;gap:12px;justify-content:center;margin-top:15px}
+.results-actions button{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#ccc;padding:8px 20px;border-radius:4px;cursor:pointer;font-size:13px}
+.results-actions button:hover{background:rgba(201,162,39,.15);border-color:#c9a227;color:#ffd700}
+.category{margin-bottom:35px}
+.cat-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.cat-name{font-family:'Cinzel',serif;font-size:1.1em;color:#ffd700;letter-spacing:2px;text-transform:uppercase}
+.cat-count{font-size:12px;color:#666;margin-left:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden;transition:all .4s;opacity:0;transform:translateY(20px);animation:cardIn .5s ease forwards}
+@keyframes cardIn{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+.card:hover{background:rgba(255,255,255,.07);border-color:rgba(201,162,39,.3);transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.card-poster{width:100%;aspect-ratio:2/3;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.card-poster img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.card:hover .card-poster img{transform:scale(1.05)}
+.card-poster .fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:15px;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);text-align:center}
+.card-poster .fallback span{font-family:'Cinzel',serif;font-size:1.1em;color:#c9a227}
+.card-info{padding:14px}
+.card-title{font-family:'Cinzel',serif;font-size:.95em;color:#f0e6d3;margin-bottom:4px}
+.card-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.card-badge{font-size:10px;padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.badge-hidden{background:rgba(100,200,255,.15);color:#64c8ff;border:1px solid rgba(100,200,255,.2)}
+.badge-masterpiece{background:rgba(255,215,0,.15);color:#ffd700;border:1px solid rgba(255,215,0,.2)}
+.badge-bangers{background:rgba(255,100,100,.15);color:#ff6464;border:1px solid rgba(255,100,100,.2)}
+.badge-underrated{background:rgba(200,150,255,.15);color:#c896ff;border:1px solid rgba(200,150,255,.2)}
+.badge-type{background:rgba(255,255,255,.08);color:#aaa;border:1px solid rgba(255,255,255,.1)}
+.card-actions{display:flex;gap:8px;margin-top:10px}
+.watch-btn{flex:1;padding:8px 12px;border:none;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;text-transform:uppercase;text-decoration:none;text-align:center;transition:all .3s}
+.watch-vidbox{background:linear-gradient(135deg,#c9a227,#8b6914);color:#0a0a0a}
+.watch-vidbox:hover{background:linear-gradient(135deg,#e0b830,#a07818)}
+.watch-animeworld{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff}
+.watch-animeworld:hover{background:linear-gradient(135deg,#ff5a4a,#d04434)}
+.popcorn-container{position:fixed;inset:0;z-index:95;pointer-events:none;overflow:hidden}
+.particle{position:absolute;width:14px;height:16px;border-radius:0 0 50% 50%;background:linear-gradient(180deg,#fff8dc,#f5deb3);opacity:0}
+.particle::before{content:"";position:absolute;top:-6px;left:2px;width:10px;height:8px;border-radius:50% 50% 0 0;background:linear-gradient(180deg,#fff8dc,#f5deb3)}
+@keyframes popcornExplode{0%{transform:translate(0,0) scale(0) rotate(0deg);opacity:1}20%{opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(.3) rotate(var(--r));opacity:0}}
+.summary-bar{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.summary-label{font-size:12px;color:#666;letter-spacing:1px;text-transform:uppercase}
+.summary-tag{background:rgba(201,162,39,.15);color:#c9a227;padding:3px 10px;border-radius:3px;font-size:12px;border:1px solid rgba(201,162,39,.2)}
+@media(max-width:900px){.screen{left:30px;right:30px}.curtain{width:30px}.cards{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}}
+@media(max-width:600px){.screen{top:50px;left:10px;right:10px;bottom:70px}.curtain{width:15px}.bulbs{display:none}.landing-title{font-size:1.4em}.q-text{font-size:1em}.q-options{grid-template-columns:1fr}.cards{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.results-title{font-size:1.3em}.projector{transform:translateX(-50%) scale(.5)}}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="marquee"><div class="marquee-inner"><span>? NOW SHOWING ? CINESUGGEST ? HIDDEN GEMS ? MASTERPIECES ? BANGERS ? UNDERRATED ?</span><span>? NOW SHOWING ? CINESUGGEST ? HIDDEN GEMS ? MASTERPIECES ? BANGERS ? UNDERRATED ?</span></div></div>
+<div class="bulbs" id="bulbs"></div>
+<div class="curtain left" id="curtainLeft"></div>
+<div class="curtain right" id="curtainRight"></div>
+<div class="curtain-top"></div>
+<div class="projector"><div class="projector-body"><div class="projector-lens"></div></div><div class="projector-beam"></div></div>
+<div class="audience" id="audience"></div>
+<div class="popcorn-container" id="popcorn"></div>
+<div class="screen"><div class="screen-frame"><div class="content" id="content">
+<div id="landing">
+<div class="landing-title">CINESUGGEST</div>
+<div class="landing-sub">Your Personal Cinema Guide</div>
+<p class="landing-desc">Answer a few questions and discover your next favorite movie, anime, or web series. From hidden gems to all-time masterpieces.</p>
+<button class="enter-btn" onclick="enterTheater()">Enter Theater</button>
+</div>
+<div class="questions" id="questions">
+<div class="q-progress"><div class="q-progress-bar"><div class="q-progress-fill" id="progressFill"></div></div></div>
+<div class="question-card active" data-q="0">
+<div class="q-number">QUESTION 01 / 04</div>
+<div class="q-text">What are you looking for?</div>
+<div class="q-options" data-question="type">
+<div class="q-opt" data-value="movie">Movie</div>
+<div class="q-opt" data-value="anime">Anime</div>
+<div class="q-opt" data-value="series">Web Series</div>
+<div class="q-opt" data-value="any">No Preference</div>
+</div></div>
+<div class="question-card" data-q="1">
+<div class="q-number">QUESTION 02 / 04</div>
+<div class="q-text">Pick your genre</div>
+<div class="q-options" data-question="genre">
+<div class="q-opt" data-value="action">Action</div>
+<div class="q-opt" data-value="comedy">Comedy</div>
+<div class="q-opt" data-value="drama">Drama</div>
+<div class="q-opt" data-value="sci-fi">Sci-Fi</div>
+<div class="q-opt" data-value="thriller">Thriller</div>
+<div class="q-opt" data-value="romance">Romance</div>
+<div class="q-opt" data-value="fantasy">Fantasy</div>
+<div class="q-opt" data-value="any">Any Genre</div>
+</div></div>
+<div class="question-card" data-q="2">
+<div class="q-number">QUESTION 03 / 04</div>
+<div class="q-text">How much time do you have?</div>
+<div class="q-options" data-question="length">
+<div class="q-opt" data-value="short">Quick (less than 90 min)</div>
+<div class="q-opt" data-value="medium">Standard (1.5-2.5h)</div>
+<div class="q-opt" data-value="long">Binge (3h+)</div>
+<div class="q-opt" data-value="any">Doesnt Matter</div>
+</div></div>
+<div class="question-card" data-q="3">
+<div class="q-number">QUESTION 04 / 04</div>
+<div class="q-text">Whats your vibe?</div>
+<div class="q-options single-col" data-question="vibe">
+<div class="q-opt" data-value="hidden-gem">Hidden Gem - Underrated brilliance waiting to be discovered</div>
+<div class="q-opt" data-value="masterpiece">Masterpiece - Critically acclaimed, timeless classics</div>
+<div class="q-opt" data-value="bangers">Bangers - Popular hits that absolutely slap</div>
+<div class="q-opt" data-value="underrated">Underrated - Didnt get the love they deserved</div>
+<div class="q-opt" data-value="any">Surprise Me - Show me everything!</div>
+</div></div>
+</div>
+<div id="results"></div>
+</div></div></div>
+<script>
+var CATEGORY_META={};
+CATEGORY_META["hidden-gem"]={label:"Hidden Gems",icon:"*",cls:"badge-hidden"};
+CATEGORY_META["masterpiece"]={label:"Masterpieces",icon:"*",cls:"badge-masterpiece"};
+CATEGORY_META["bangers"]={label:"Bangers",icon:"*",cls:"badge-bangers"};
+CATEGORY_META["underrated"]={label:"Underrated",icon:"*",cls:"badge-underrated"};
+var ALL_DATA=[
+{title:"Moon",year:2009,type:"movie",genre:"sci-fi",length:"medium",vibe:"hidden-gem",poster:"https://image.tmdb.org/t/p/w500/896isF5KbNblW4SN9Ykbnj3eJ7r.jpg"},
+{title:"Dark",year:2017,type:"series",genre:"thriller",length:"long",vibe:"hidden-gem",poster:"https://image.tmdb.org/t/p/w500/apbrbWs8M9lyIk1LGCbMqBcYVtN.jpg"},
+{title:"Coherence",year:2013,type:"movie",genre:"sci-fi",length:"short",vibe:"hidden-gem",poster:"https://image.tmdb.org/t/p/w500/coherence.jpg"},
+{title:"The Prestige",year:2006,type:"movie",genre:"thriller",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/bdN3gXuIZYaJP7ftKK2sU0nPtEA.jpg"},
+{title:"The Shawshank Redemption",year:1994,type:"movie",genre:"drama",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/9cjIGRQL1m4E87VYh5MwBcKJ2uK.jpg"},
+{title:"Spirited Away",year:2001,type:"anime",genre:"fantasy",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg"},
+{title:"Breaking Bad",year:2008,type:"series",genre:"drama",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/ggFHVNu6YYjJwM3xS5r3Tq6F2i.jpg"},
+{title:"Your Name",year:2016,type:"anime",genre:"romance",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/xq1Ugd62d23K2kkoUoLS3QqNdDp.jpg"},
+{title:"The Godfather",year:1972,type:"movie",genre:"drama",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg"},
+{title:"Fullmetal Alchemist: Brotherhood",year:2009,type:"anime",genre:"fantasy",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/5ZFUEOULaVmlT0O6G1bE1ulUf1.jpg"},
+{title:"Inception",year:2010,type:"movie",genre:"action",length:"medium",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg"},
+{title:"Attack on Titan",year:2013,type:"anime",genre:"action",length:"long",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/z3r2PXw4Fn3E7UMSkHJSqN9xzf.jpg"},
+{title:"Money Heist",year:2017,type:"series",genre:"thriller",length:"long",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/reEMJA1uzscCjpeNU007L8xTbMd.jpg"},
+{title:"Interstellar",year:2014,type:"movie",genre:"sci-fi",length:"long",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg"},
+{title:"Demon Slayer: Mugen Train",year:2020,type:"anime",genre:"action",length:"medium",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/w8GJx42MeuoNqAF1etK40SW1xR6.jpg"},
+{title:"Children of Men",year:2006,type:"movie",genre:"sci-fi",length:"medium",vibe:"underrated",poster:"https://image.tmdb.org/t/p/w500/90A3ClyNdrbJMg0R2WgWZOwFp2T.jpg"},
+{title:"Erased",year:2016,type:"anime",genre:"thriller",length:"short",vibe:"underrated",poster:"https://image.tmdb.org/t/p/w500/1e9R2aMzCUGm8GRYYTPoG3TnGc6.jpg"},
+{title:"The Leftovers",year:2014,type:"series",genre:"drama",length:"long",vibe:"underrated",poster:"https://image.tmdb.org/t/p/w500/8pyRg17Wle2L0O5gqrbNpO0F47t.jpg"},
+{title:"Gattaca",year:1997,type:"movie",genre:"sci-fi",length:"medium",vibe:"underrated",poster:"https://image.tmdb.org/t/p/w500/2o0TUPf6Qfo3tCVMgZLFohQ9MSP.jpg"},
+{title:"Parasite",year:2019,type:"movie",genre:"thriller",length:"medium",vibe:"underrated",poster:"https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg"},
+{title:"The Dark Knight",year:2008,type:"movie",genre:"action",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911BytD1VZ0Mm8q.jpg"},
+{title:"The Godfather Part II",year:1974,type:"movie",genre:"drama",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/7BXoBReiSVmNIFhHxZaq5R3c9Rz.jpg"},
+{title:"12 Angry Men",year:1957,type:"movie",genre:"drama",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/7BkSnD1q6K2T0Bx8jXy0gHjM6kL.jpg"},
+{title:"The Lord of the Rings: The Return of the King",year:2003,type:"movie",genre:"fantasy",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg"},
+{title:"Schindler's List",year:1993,type:"movie",genre:"drama",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg"},
+{title:"Pulp Fiction",year:1994,type:"movie",genre:"thriller",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg"},
+{title:"Fight Club",year:1999,type:"movie",genre:"drama",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg"},
+{title:"Forrest Gump",year:1994,type:"movie",genre:"drama",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg"},
+{title:"The Lord of the Rings: The Fellowship of the Ring",year:2001,type:"movie",genre:"fantasy",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJJRnGUKSqGm0uL.jpg"},
+{title:"The Lord of the Rings: The Two Towers",year:2002,type:"movie",genre:"fantasy",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/5VTN0pR8gcqV3EPUHHfMGnJYN9L.jpg"},
+{title:"Goodfellas",year:1990,type:"movie",genre:"drama",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/aKuFiU82s5ISJDx2LrT3Vx8KlFk.jpg"},
+{title:"The Matrix",year:1999,type:"movie",genre:"sci-fi",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg"},
+{title:"The Silence of the Lambs",year:1991,type:"movie",genre:"thriller",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/uS9m8OBk1RVFfMnLTFZG1ESYX9W.jpg"},
+{title:"Saving Private Ryan",year:1998,type:"movie",genre:"drama",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/uqx37cS8cpHg8U35f9G5J0y5T9J.jpg"},
+{title:"Se7en",year:1995,type:"movie",genre:"thriller",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/6yoghtyTpznpBik8EngEmJskVUO.jpg"},
+{title:"The Green Mile",year:1999,type:"movie",genre:"drama",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/velWPhVMQeQKcxggNEU8YmIo52R.jpg"},
+{title:"Gladiator",year:2000,type:"movie",genre:"action",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/ty8TGRuvJLPUmAR1H1nRIsgCLYn.jpg"},
+{title:"The Departed",year:2006,type:"movie",genre:"thriller",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/tGLO9zw5ZtC0yBO6qFgleC2KxqI.jpg"},
+{title:"Whiplash",year:2014,type:"movie",genre:"drama",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/7fn624j5lj3xTme2SgiLCeuedmO.jpg"},
+{title:"The Lion King",year:1994,type:"movie",genre:"drama",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/sKCr78MXSL3wm2LSBvl4qT3p4i3.jpg"},
+{title:"Terminator 2: Judgment Day",year:1991,type:"movie",genre:"action",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/5M0ij0cHMm3TuR4hY5H79WDkZKD.jpg"},
+{title:"Back to the Future",year:1985,type:"movie",genre:"sci-fi",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/fNOH9f1aA7XRTzl1sAOx9iF553Q.jpg"},
+{title:"The Pianist",year:2002,type:"movie",genre:"drama",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/iun4WzxMgC9pUHmhFwtrTtYAOmq.jpg"},
+{title:"City of God",year:2002,type:"movie",genre:"drama",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/k7eYdWvhYQfUs4z3sF1YQ7gXK5j.jpg"},
+{title:"American History X",year:1998,type:"movie",genre:"drama",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/c2gsmSQ2CkK5Q1X1V3W1Q8kz3Vl.jpg"},
+{title:"The Usual Suspects",year:1995,type:"movie",genre:"thriller",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/bXbVL6FivbJMgVGLhxoYzkzYDnM.jpg"},
+{title:"Casablanca",year:1942,type:"movie",genre:"drama",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/w0pNcmpxjEBR1a8H2OJNZbM7SgF.jpg"},
+{title:"Psycho",year:1960,type:"movie",genre:"thriller",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/81d8OyEFJOnr6Jaz4YzV4JvRJRV.jpg"},
+{title:"Avengers: Endgame",year:2019,type:"movie",genre:"action",length:"long",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/ulzhLuWrpk07UQj8U1wI8TfpzWw.jpg"},
+{title:"Joker",year:2019,type:"movie",genre:"drama",length:"medium",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/udD2D7bIy0yQ4O8WnTZgG7Z5k5K.jpg"},
+{title:"WALL-E",year:2008,type:"movie",genre:"sci-fi",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/hbhFnRzzgCbRDo8xLvVv7DfGZ5B.jpg"},
+{title:"Coco",year:2017,type:"movie",genre:"fantasy",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/gGEsBKKij0FJ0p2F7JmJ3nLmWvZ.jpg"},
+{title:"Inside Out",year:2015,type:"movie",genre:"comedy",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/rRc0miXDCw6vWqDOLv7oGZGZz6O.jpg"},
+{title:"Hunter x Hunter",year:2011,type:"anime",genre:"action",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/tKNaY6oYKMOYiyV4dBU9NQaJD0K.jpg"},
+{title:"One Piece",year:1999,type:"anime",genre:"fantasy",length:"long",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/cMD9Ygz11OpJPGx3NFbh1T2oGTz.jpg"},
+{title:"Death Note",year:2006,type:"anime",genre:"thriller",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/dVMFfvqMCk6JMzMMFBbtBsI41nm.jpg"},
+{title:"Cowboy Bebop",year:1998,type:"anime",genre:"sci-fi",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/5lZ1wLx7gGzQ0Q3Rq6TqB27yL9M.jpg"},
+{title:"Dragon Ball Z",year:1989,type:"anime",genre:"action",length:"long",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/eDmV6R29vNq2YHcbBq3YFjG2hA2.jpg"},
+{title:"Naruto: Shippuden",year:2007,type:"anime",genre:"action",length:"long",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/zaygQkMxH3X6E3X1GjWqTjzL2bM.jpg"},
+{title:"Steins;Gate",year:2011,type:"anime",genre:"sci-fi",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/3lF9kPL0ZqHjzGJvGms83YmN2XJ.jpg"},
+{title:"Code Geass",year:2006,type:"anime",genre:"sci-fi",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/5EX7F2hYQTJqQxH7r4nVqUgXnHv.jpg"},
+{title:"Vinland Saga",year:2019,type:"anime",genre:"action",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/lDqB2gPJX0XK1xVdZmq2LK3WZ0z.jpg"},
+{title:"Bleach: Thousand-Year Blood War",year:2022,type:"anime",genre:"action",length:"long",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/gE2s6j6vQmKmHX7KJjXnGZ3pW1z.jpg"},
+{title:"Frieren: Beyond Journey's End",year:2023,type:"anime",genre:"fantasy",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/3QY4QDm2iX7jX1z2xYx7LZ6pW8v.jpg"},
+{title:"Neon Genesis Evangelion",year:1995,type:"anime",genre:"sci-fi",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/7L3qvN0sP7L0xq5L1z5gK5J6kK0.jpg"},
+{title:"Akira",year:1988,type:"anime",genre:"sci-fi",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/7v9i1Rq1q5X6jQ1H5K2gL3Z4pM0.jpg"},
+{title:"Grave of the Fireflies",year:1988,type:"anime",genre:"drama",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/4n2H0q2J0k6M1X5qL1z5gK5J6kK0.jpg"},
+{title:"Demon Slayer: Kimetsu no Yaiba",year:2019,type:"anime",genre:"action",length:"medium",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/xUyq6mGYhW2M4X5qL1z5gK5J6kK0.jpg"},
+{title:"Jujutsu Kaisen",year:2020,type:"anime",genre:"action",length:"medium",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/3p3p5qL1z5gK5J6kK0xUyq6mGYhW2M.jpg"},
+{title:"Tokyo Ghoul",year:2014,type:"anime",genre:"thriller",length:"medium",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/5M0ij0cHMm3TuR4hY5H79WDkZKD.jpg"},
+{title:"Princess Mononoke",year:1997,type:"anime",genre:"fantasy",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/6p3p5qL1z5gK5J6kK0xUyq6mGYhW3N.jpg"},
+{title:"Howl's Moving Castle",year:2004,type:"anime",genre:"fantasy",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/7L3qvN0sP7L0xq5L1z5gK5J6kK0xU.jpg"},
+{title:"My Neighbor Totoro",year:1988,type:"anime",genre:"fantasy",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/rtGDOeG9L3k0Y9l8V5J6kK0xUyq6m.jpg"},
+{title:"Weathering With You",year:2019,type:"anime",genre:"romance",length:"medium",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/5L1z5gK5J6kK0xUyq6mGYhW3N4p3.jpg"},
+{title:"KonoSuba",year:2016,type:"anime",genre:"comedy",length:"medium",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/3p3p5qL1z5gK5J6kK0xUyq6mGYhW2.jpg"},
+{title:"Re:Zero",year:2016,type:"anime",genre:"fantasy",length:"medium",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/6p3p5qL1z5gK5J6kK0xUyq6mGYhW4.jpg"},
+{title:"Legend of the Galactic Heroes",year:1988,type:"anime",genre:"sci-fi",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/7L3qvN0sP7L0xq5L1z5gK5J6kK0xU.jpg"},
+{title:"Sword Art Online",year:2012,type:"anime",genre:"fantasy",length:"medium",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/5M0ij0cHMm3TuR4hY5H79WDkZKB.jpg"},
+{title:"Black Clover",year:2017,type:"anime",genre:"fantasy",length:"long",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/5EX7F2hYQTJqQxH7r4nVqUgXnHv.jpg"},
+{title:"Fairy Tail",year:2009,type:"anime",genre:"fantasy",length:"long",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/3lF9kPL0ZqHjzGJvGms83YmN2XJ.jpg"},
+{title:"Gintama",year:2006,type:"anime",genre:"comedy",length:"long",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/5L1z5gK5J6kK0xUyq6mGYhW3N4p3.jpg"},
+{title:"Monster",year:2004,type:"anime",genre:"thriller",length:"long",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/7L3qvN0sP7L0xq5L1z5gK5J6kK0xU.jpg"},
+{title:"Clannad: After Story",year:2008,type:"anime",genre:"drama",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/3p3p5qL1z5gK5J6kK0xUyq6mGYhW2.jpg"},
+{title:"Toradora!",year:2008,type:"anime",genre:"romance",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/6p3p5qL1z5gK5J6kK0xUyq6mGYhW3.jpg"},
+{title:"Trigun",year:1998,type:"anime",genre:"action",length:"short",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/5M0ij0cHMm3TuR4hY5H79WDkZKC.jpg"},
+{title:"Hellsing Ultimate",year:2006,type:"anime",genre:"action",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/3lF9kPL0ZqHjzGJvGms83YmN2XJ.jpg"},
+{title:"The Rising of the Shield Hero",year:2019,type:"anime",genre:"fantasy",length:"medium",vibe:"bangers",poster:"https://image.tmdb.org/t/p/w500/5EX7F2hYQTJqQxH7r4nVqUgXnHv.jpg"},
+{title:"Nausicaa of the Valley of the Wind",year:1984,type:"anime",genre:"fantasy",length:"medium",vibe:"masterpiece",poster:"https://image.tmdb.org/t/p/w500/7L3qvN0sP7L0xq5L1z5gK5J6kK0xU.jpg"}
+];
+var state={answers:{},currentQ:0};
+function init(){
+var i,b,seat,head,p;
+var bulbs=document.getElementById("bulbs");
+for(i=0;i<80;i++){b=document.createElement("div");b.className="bulb";bulbs.appendChild(b);}
+var audience=document.getElementById("audience");
+for(i=0;i<30;i++){seat=document.createElement("div");seat.className="seat";head=document.createElement("div");head.className="head";seat.appendChild(head);audience.appendChild(seat);}
+var popcorn=document.getElementById("popcorn");
+for(i=0;i<40;i++){p=document.createElement("div");p.className="particle";popcorn.appendChild(p);}
+var opts=document.querySelectorAll(".q-opt");
+for(i=0;i<opts.length;i++){opts[i].addEventListener("click",function(){selectOption(this);});}
+}
+function enterTheater(){
+document.getElementById("curtainLeft").classList.add("open");
+document.getElementById("curtainRight").classList.add("open");
+document.getElementById("landing").classList.remove("show");
+setTimeout(function(){
+document.getElementById("landing").style.display="none";
+document.getElementById("questions").classList.add("active");
+showQuestion(0);updateProgress();
+},1600);
+}
+function selectOption(opt){
+var parent=opt.closest(".q-options");
+var opts=parent.querySelectorAll(".q-opt");
+for(var i=0;i<opts.length;i++)opts[i].classList.remove("selected");
+opt.classList.add("selected");
+var qName=parent.dataset.question;
+state.answers[qName]=opt.dataset.value;
+setTimeout(function(){
+if(state.currentQ<3){state.currentQ++;showQuestion(state.currentQ);updateProgress();}
+else showResults();
+},400);
+}
+function showQuestion(idx){
+var cards=document.querySelectorAll(".question-card");
+for(var i=0;i<cards.length;i++){
+cards[i].classList.remove("active");
+if(i===idx){(function(c){setTimeout(function(){c.classList.add("active");},30);})(cards[i]);}
+}
+}
+function updateProgress(){
+var pct=(state.currentQ/4)*100;
+document.getElementById("progressFill").style.width=Math.min(pct,100)+"%";
+}
+function showResults(){
+document.getElementById("questions").classList.remove("active");
+var results=document.getElementById("results");
+results.className="show";
+var filtered=filterData();
+var a=state.answers;
+var summaryTags=[];
+if(a.type&&a.type!=="any")summaryTags.push(a.type.charAt(0).toUpperCase()+a.type.slice(1));
+if(a.genre&&a.genre!=="any")summaryTags.push(a.genre.charAt(0).toUpperCase()+a.genre.slice(1));
+if(a.length&&a.length!=="any"){var lm={short:"Quick Watch",medium:"Standard",long:"Binge"};summaryTags.push(lm[a.length]);}
+if(a.vibe&&a.vibe!=="any")summaryTags.push(CATEGORY_META[a.vibe]?CATEGORY_META[a.vibe].label:a.vibe);
+var html="<div class=\"results-header\">";
+html+="<div class=\"results-title\">Your Recommendations</div>";
+html+="<div class=\"results-sub\">Based on your choices</div>";
+if(summaryTags.length){
+html+="<div class=\"summary-bar\"><span class=\"summary-label\">Your picks:</span>";
+for(var t=0;t<summaryTags.length;t++)html+="<span class=\"summary-tag\">"+summaryTags[t]+"</span>";
+html+="</div>";
+}
+html+="<div class=\"results-actions\"><button onclick=\"resetAll()\">Start Over</button></div></div>";
+var grouped={};
+var order=["hidden-gem","masterpiece","bangers","underrated"];
+for(var i=0;i<filtered.length;i++){
+var v=filtered[i].vibe;
+if(!grouped[v])grouped[v]=[];
+grouped[v].push(filtered[i]);
+}
+for(var o=0;o<order.length;o++){
+var key=order[o];
+if(!grouped[key]||!grouped[key].length)continue;
+var meta=CATEGORY_META[key]||{label:key,icon:"",cls:""};
+html+="<div class=\"category\"><div class=\"cat-header\">";
+html+="<span class=\"cat-icon\">"+meta.icon+"</span>";
+html+="<span class=\"cat-name\">"+meta.label+"</span>";
+html+="<span class=\"cat-count\">"+grouped[key].length+" titles</span>";
+html+="</div><div class=\"cards\">";
+for(var j=0;j<grouped[key].length;j++){
+var item=grouped[key][j];
+var isAnime=item.type==="anime";
+html+="<div class=\"card\"><div class=\"card-poster\">";
+html+="<img src=\""+item.poster+"\" alt=\""+item.title+"\" loading=\"lazy\"";
+html+=" onerror=\"this.style.display='none';this.nextElementSibling.style.display='flex'\">";
+html+="<div class=\"fallback\" style=\"display:none\"><span>"+item.title+"</span></div>";
+html+="</div><div class=\"card-info\">";
+html+="<div class=\"card-title\">"+item.title+" <span style=\"color:#666;font-size:.75em\">("+item.year+")</span></div>";
+html+="<div class=\"card-meta\">";
+html+="<span class=\"card-badge "+meta.cls+"\">"+meta.label+"</span>";
+html+="<span class=\"card-badge badge-type\">"+item.type.toUpperCase()+"</span>";
+html+="</div><div class=\"card-actions\">";
+html+='<a href="https://vidbox.dev/home" target="_blank" class="watch-btn watch-vidbox">VidBox</a>';
+if(isAnime)html+='<a href="https://watchanimeworld.net/" target="_blank" class="watch-btn watch-animeworld">AnimeWorld</a>';
+html+="</div></div></div>";
+}
+html+="</div></div>";
+}
+if(filtered.length===0){
+html+="<div style=\"text-align:center;padding:40px;color:#666\">";
+html+="<div style=\"font-size:3em;margin-bottom:15px\">?</div>";
+html+="<p>No exact matches found for your filters.</p>";
+html+='<button onclick="resetAll()" style="margin-top:15px;background:rgba(201,162,39,.2);border:1px solid #c9a227;color:#c9a227;padding:10px 25px;border-radius:4px;cursor:pointer">Try Again</button>';
+html+="</div>";
+}
+results.innerHTML=html;
+results.style.display="block";
+results.scrollTop=0;
+explodePopcorn();
+}
+function filterData(){
+var a=state.answers;
+var filtered=ALL_DATA.slice();
+if(a.type&&a.type!=="any")filtered=filtered.filter(function(x){return x.type===a.type;});
+if(a.genre&&a.genre!=="any")filtered=filtered.filter(function(x){return x.genre===a.genre;});
+if(a.length&&a.length!=="any")filtered=filtered.filter(function(x){return x.length===a.length;});
+if(a.vibe&&a.vibe!=="any"){var vf=filtered.filter(function(x){return x.vibe===a.vibe;});if(vf.length>0)return vf;}
+return filtered;
+}
+function explodePopcorn(){
+var particles=document.querySelectorAll(".particle");
+var w=window.innerWidth;
+var h=window.innerHeight;
+for(var i=0;i<particles.length;i++){
+var startX=w/2+(Math.random()-0.5)*100;
+var startY=h/2+(Math.random()-0.5)*80;
+var tx=(Math.random()-0.5)*w*1.2;
+var ty=(Math.random()-0.5)*h*1.2;
+var r=Math.random()*720-360;
+var dur=1.5+Math.random()*2;
+particles[i].style.cssText="left:"+startX+"px;top:"+startY+"px;--tx:"+tx+"px;--ty:"+ty+"px;--r:"+r+"deg;animation:popcornExplode "+dur+"s ease-out forwards;animation-delay:"+(i*0.05)+"s;";
+}
+setTimeout(function(){for(var i=0;i<particles.length;i++){particles[i].style.animation="none";particles[i].style.opacity="0";}},5000);
+}
+function resetAll(){
+state.answers={};state.currentQ=0;
+document.getElementById("results").style.display="none";
+document.getElementById("results").className="";
+document.getElementById("questions").classList.remove("active");
+document.getElementById("curtainLeft").classList.remove("open");
+document.getElementById("curtainRight").classList.remove("open");
+document.getElementById("landing").style.display="block";
+setTimeout(function(){document.getElementById("landing").classList.add("show");},100);
+var opts=document.querySelectorAll(".q-opt");
+for(var i=0;i<opts.length;i++)opts[i].classList.remove("selected");
+var cards=document.querySelectorAll(".question-card");
+for(var i=0;i<cards.length;i++){
+cards[i].classList.remove("active");
+if(i===0){(function(c){setTimeout(function(){c.classList.add("active");},1000);})(cards[i]);}
+}
+document.getElementById("progressFill").style.width="0%";
+}
+document.addEventListener("DOMContentLoaded",function(){
+init();
+setTimeout(function(){document.getElementById("landing").classList.add("show");},300);
+});
+</script>
+</body>
+</html>
+
+
