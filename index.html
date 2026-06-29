@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CineSuggest - Movie, Anime & Web Series</title>
+<title>ItsyourTime - Movie, Anime & Web Series</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -100,6 +100,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a;font-family:
 .watch-vidbox:hover{background:linear-gradient(135deg,#e0b830,#a07818)}
 .watch-animeworld{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff}
 .watch-animeworld:hover{background:linear-gradient(135deg,#ff5a4a,#d04434)}
+.support-btn{position:fixed;bottom:20px;right:20px;z-index:100;background:linear-gradient(135deg,#ff813f,#ff5400);color:#fff;border:none;padding:12px 20px;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(255,129,63,.5);transition:all .3s;text-decoration:none;display:flex;align-items:center;gap:8px}
+.support-btn:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(255,129,63,.7)}
+.support-btn .coffee-icon{font-size:18px}
 .popcorn-container{position:fixed;inset:0;z-index:95;pointer-events:none;overflow:hidden}
 .particle{position:absolute;width:14px;height:16px;border-radius:0 0 50% 50%;background:linear-gradient(180deg,#fff8dc,#f5deb3);opacity:0}
 .particle::before{content:"";position:absolute;top:-6px;left:2px;width:10px;height:8px;border-radius:50% 50% 0 0;background:linear-gradient(180deg,#fff8dc,#f5deb3)}
@@ -113,7 +116,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a;font-family:
 </head>
 <body>
 <div class="grain"></div>
-<div class="marquee"><div class="marquee-inner"><span>? NOW SHOWING ? CINESUGGEST ? HIDDEN GEMS ? MASTERPIECES ? BANGERS ? UNDERRATED ?</span><span>? NOW SHOWING ? CINESUGGEST ? HIDDEN GEMS ? MASTERPIECES ? BANGERS ? UNDERRATED ?</span></div></div>
+<div class="marquee"><div class="marquee-inner"><span>? NOW SHOWING ? ItsyourTime ? HIDDEN GEMS ? MASTERPIECES ? BANGERS ? UNDERRATED ?</span><span>? NOW SHOWING ? ItsyourTime ? HIDDEN GEMS ? MASTERPIECES ? BANGERS ? UNDERRATED ?</span></div></div>
 <div class="bulbs" id="bulbs"></div>
 <div class="curtain left" id="curtainLeft"></div>
 <div class="curtain right" id="curtainRight"></div>
@@ -121,9 +124,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a;font-family:
 <div class="projector"><div class="projector-body"><div class="projector-lens"></div></div><div class="projector-beam"></div></div>
 <div class="audience" id="audience"></div>
 <div class="popcorn-container" id="popcorn"></div>
+<a class="support-btn" href="https://www.buymeacoffee.com/yourusername" target="_blank" id="supportBtn"><span class="coffee-icon">☕</span> Buy Me a Coffee</a>
 <div class="screen"><div class="screen-frame"><div class="content" id="content">
 <div id="landing">
-<div class="landing-title">CINESUGGEST</div>
+<div class="landing-title">ITSYOURTIME</div>
 <div class="landing-sub">Your Personal Cinema Guide</div>
 <p class="landing-desc">Answer a few questions and discover your next favorite movie, anime, or web series. From hidden gems to all-time masterpieces.</p>
 <button class="enter-btn" onclick="enterTheater()">Enter Theater</button>
@@ -334,7 +338,8 @@ html+="<div class=\"summary-bar\"><span class=\"summary-label\">Your picks:</spa
 for(var t=0;t<summaryTags.length;t++)html+="<span class=\"summary-tag\">"+summaryTags[t]+"</span>";
 html+="</div>";
 }
-html+="<div class=\"results-actions\"><button onclick=\"resetAll()\">Start Over</button></div></div>";
+html+="<div class=\"results-actions\"><button onclick=\"resetAll()\">Start Over</button></div>";
+html+='<div style="margin-top:20px;padding:15px;border-top:1px solid rgba(255,255,255,.06);text-align:center"><p style="color:#555;font-size:11px">Some links are affiliate links. We earn a small commission at no extra cost to you. ☕ <a href="https://www.buymeacoffee.com/yourusername" target="_blank" style="color:#c9a227;text-decoration:none">Support this site</a></p></div></div>';
 var grouped={};
 var order=["hidden-gem","masterpiece","bangers","underrated"];
 for(var i=0;i<filtered.length;i++){
